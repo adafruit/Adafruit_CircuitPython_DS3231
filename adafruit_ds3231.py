@@ -39,7 +39,8 @@ https://github.com/adafruit/micropython/releases
 **Notes:**
 
 #. Milliseconds are not supported by this RTC.
-#. The data sheet for the DS3231 can be obtained from
+#. The data sheet for the DS3231 can be obtained from.
+#. mpy files automatically generated.
 
 https://datasheets.maximintegrated.com/en/ds/DS3231.pdf
 
