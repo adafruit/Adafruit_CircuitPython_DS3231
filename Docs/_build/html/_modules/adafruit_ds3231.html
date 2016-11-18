@@ -1,0 +1,475 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>adafruit_ds3231 &#8212; Adafruit&#39;s DS3231 RTC Library 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="Adafruit&#39;s DS3231 RTC Library 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for adafruit_ds3231</h1><div class="highlight"><pre>
+<span></span>
+<span class="sd">&quot;&quot;&quot; MicroPython library to support DS3231 Real Time Clock (RTC).</span>
+
+<span class="sd">This library supports the use of the DS3231-based RTC in MicroPython. It</span>
+<span class="sd">contains a base RTC class used by all Adafruit RTC libraries. This base</span>
+<span class="sd">class is inherited by the chip-specific subclasses.</span>
+
+<span class="sd">Functions are included for reading and writing registers and manipulating</span>
+<span class="sd">datetime objects.</span>
+
+<span class="sd">Author(s): Philip R. Moyer and Radomir Dopieralski for Adafruit Industries.</span>
+<span class="sd">Date: November 2016</span>
+<span class="sd">Affiliation: Adafruit Industries</span>
+
+<span class="sd">Implementation Notes</span>
+<span class="sd">--------------------</span>
+
+<span class="sd">**Hardware:**</span>
+
+<span class="sd">* Adafruit `Feather HUZZAH ESP8266 &lt;https://www.adafruit.com/products/2821&gt;`_ (Product ID: 2821)</span>
+<span class="sd">* Adafruit `Feather M0 Adalogger &lt;https://www.adafruit.com/products/2796&gt;`_  (Product ID: 2796)</span>
+<span class="sd">* Adafruit `Arduino Zero &lt;https://www.adafruit.com/products/2843&gt;`_ (Product ID: 2843)</span>
+<span class="sd">* Pycom LoPy</span>
+<span class="sd">* Adafruit `DS3231 RTC breakout &lt;https://www.adafruit.com/products/3013&gt;`_ (Product ID: 3013)</span>
+
+<span class="sd">**Software and Dependencies:**</span>
+
+<span class="sd">* MicroPython firmware for the ESP8622, which can be obtained from:</span>
+
+<span class="sd">https://micropython.org/download/#esp8266</span>
+
+<span class="sd">* MicroPython firmware for the M0-based boards, which can be obtained from:</span>
+
+<span class="sd">https://github.com/adafruit/micropython/releases</span>
+
+<span class="sd">* ucollections library</span>
+<span class="sd">* utime library</span>
+
+<span class="sd">**Notes:**</span>
+
+<span class="sd">#. Milliseconds are not supported by this RTC.</span>
+<span class="sd">#. The data sheet for the DS3231 can be obtained from</span>
+
+<span class="sd">https://datasheets.maximintegrated.com/en/ds/DS3231.pdf</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">##############################################################################</span>
+<span class="c1"># Credits and Acknowledgements:</span>
+<span class="c1">#        Original code written by Radomir Dopieralski. See LICENSE file.</span>
+<span class="c1">##############################################################################</span>
+
+
+<span class="c1">##############################################################################</span>
+<span class="c1"># Imports</span>
+<span class="c1">##############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">osName</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">uname</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">if</span> <span class="p">(</span><span class="s1">&#39;samd21&#39;</span> <span class="o">==</span> <span class="n">osName</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s1">&#39;esp8622&#39;</span> <span class="o">==</span> <span class="n">osName</span><span class="p">):</span>
+	<span class="kn">import</span> <span class="nn">ucollections</span>
+	<span class="kn">import</span> <span class="nn">utime</span>
+<span class="k">else</span><span class="p">:</span>
+	<span class="kn">import</span> <span class="nn">collections</span> <span class="k">as</span> <span class="nn">ucollections</span>
+	<span class="kn">import</span> <span class="nn">time</span> <span class="k">as</span> <span class="nn">utime</span>
+
+
+<span class="c1">##############################################################################</span>
+<span class="c1"># Globals and constants</span>
+<span class="c1">##############################################################################</span>
+
+<span class="n">DateTimeTuple</span> <span class="o">=</span> <span class="n">ucollections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;DateTimeTuple&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;month&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;weekday&quot;</span><span class="p">,</span> <span class="s2">&quot;hour&quot;</span><span class="p">,</span> <span class="s2">&quot;minute&quot;</span><span class="p">,</span> <span class="s2">&quot;second&quot;</span><span class="p">,</span> <span class="s2">&quot;millisecond&quot;</span><span class="p">])</span>
+<span class="n">AlarmTuple</span> <span class="o">=</span> <span class="n">ucollections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;AlarmTuple&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">,</span> <span class="s2">&quot;hour&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;minute&quot;</span><span class="p">,</span> <span class="s2">&quot;seconds&quot;</span><span class="p">])</span>
+
+
+<span class="c1">##############################################################################</span>
+<span class="c1"># Functions</span>
+<span class="c1">##############################################################################</span>
+
+<div class="viewcode-block" id="datetime_tuple"><a class="viewcode-back" href="../details.html#adafruit_ds3231.datetime_tuple">[docs]</a><span class="k">def</span> <span class="nf">datetime_tuple</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">weekday</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                   <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">millisecond</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return individual values converted into a data structure (a tuple).</span>
+
+<span class="sd">    **Arguments:**</span>
+
+<span class="sd">    * year - The year (four digits, required, no default).</span>
+<span class="sd">    * month - The month (two digits, required, no default).</span>
+<span class="sd">    * day - The day (two digits, required, no default).</span>
+<span class="sd">    * weekday - The day of the week (one digit, optional, default zero).</span>
+<span class="sd">    * hour - The hour (two digits, 24-hour format, optional, default zero).</span>
+<span class="sd">    * minute - The minute (two digits, optional, default zero).</span>
+<span class="sd">    * second - The second (two digits, optional, default zero).</span>
+<span class="sd">    * millisecond - Milliseconds (not supported, default zero).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">DateTimeTuple</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">weekday</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span>
+                         <span class="n">second</span><span class="p">,</span> <span class="n">millisecond</span><span class="p">)</span></div>
+
+<span class="c1"># Only supports day at this time, not weekday.</span>
+<div class="viewcode-block" id="alarm_tuple"><a class="viewcode-back" href="../details.html#adafruit_ds3231.alarm_tuple">[docs]</a><span class="k">def</span> <span class="nf">alarm_tuple</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">seconds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return data structure for writing DS3231 alarm registers.</span>
+
+<span class="sd">    **Arguments:**</span>
+
+<span class="sd">    * day - The day of the month for the alarm (required, no default)</span>
+<span class="sd">    * hour - The hour of the alarm (required, no default)</span>
+<span class="sd">    * minute - The minute for the alarm (required, no default)</span>
+<span class="sd">    * seconds - The sedons for the alarm (required, no default)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">AlarmTuple</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">_bcd2bin</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert binary coded decimal to Binary</span>
+
+<span class="sd">    **Arguments:**</span>
+
+<span class="sd">    * value - the BCD value to convert to binary (required, no default)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="o">-</span> <span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="n">value</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_bin2bcd</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a binary value to binary coded decimal.</span>
+
+<span class="sd">    **Arguments:**</span>
+
+<span class="sd">    * value - the binary value to convert to BCD. (required, no default)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="o">+</span> <span class="mi">6</span> <span class="o">*</span> <span class="p">(</span><span class="n">value</span> <span class="o">//</span> <span class="mi">10</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="tuple2seconds"><a class="viewcode-back" href="../details.html#adafruit_ds3231.tuple2seconds">[docs]</a><span class="k">def</span> <span class="nf">tuple2seconds</span><span class="p">(</span><span class="n">datetime</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert a datetime tuple to seconds since the epoch.</span>
+
+<span class="sd">    **Arguments:**</span>
+
+<span class="sd">    * datetime - a datetime tuple containing the date and time to convert.</span>
+<span class="sd">      (required, no default)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">utime</span><span class="o">.</span><span class="n">mktime</span><span class="p">((</span><span class="n">datetime</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+        <span class="n">datetime</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">second</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">weekday</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="seconds2tuple"><a class="viewcode-back" href="../details.html#adafruit_ds3231.seconds2tuple">[docs]</a><span class="k">def</span> <span class="nf">seconds2tuple</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert seconds since the epoch into a datetime structure.</span>
+
+<span class="sd">    **Arguments:**</span>
+
+<span class="sd">    * seconds - the value to convert. (required, no default)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">weekday</span><span class="p">,</span> <span class="n">_yday</span> <span class="o">=</span> <span class="n">utime</span><span class="o">.</span><span class="n">localtime</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">DateTimeTuple</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">weekday</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<span class="c1">##############################################################################</span>
+<span class="c1"># Classes and methods</span>
+<span class="c1">##############################################################################</span>
+
+<span class="k">class</span> <span class="nc">_BaseRTC</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Provide RTC functionality common across all Adafruit RTC products.</span>
+
+<span class="sd">    This is the parent class inherited by the chip-specific subclasses.</span>
+
+<span class="sd">    **Methods:**</span>
+
+<span class="sd">    * __init__ - constructor (must be passed I2C interface object)</span>
+<span class="sd">    * _register - read and write registers</span>
+<span class="sd">    * _flag - return or set flag bits in registers</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i2c</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="mh">0x68</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Base RTC class constructor.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * i2c - an existing I2C interface object (required, no default)</span>
+<span class="sd">        * address - the hex i2c address for the DS3231 chip (default 0x68).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span> <span class="o">=</span> <span class="n">i2c</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+
+    <span class="k">def</span> <span class="nf">_register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">buffer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Base RTC class register method to set or read a register value.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * register - Hex address of the register to be manipulated. (required)</span>
+<span class="sd">        * buffer - Data to be written to the register location, or None</span>
+<span class="sd">          if the register is to be read.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">buffer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="o">.</span><span class="n">readfrom_mem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="o">.</span><span class="n">writeto_mem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set or return a bitwise flag setting.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * register - Hex address of the register to be used. (required)</span>
+<span class="sd">        * mask - Binary bitmask to extract or write specific bits. (required)</span>
+<span class="sd">        * value - Data to write into the flag register. If None, the method</span>
+<span class="sd">        * returns the flag(s). If set, it is written to the register (using the</span>
+<span class="sd">          mask parameter). (optional, default None)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span><span class="n">register</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">data</span> <span class="o">&amp;</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">|=</span> <span class="n">mask</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="n">mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span><span class="n">register</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">((</span><span class="n">data</span><span class="p">,)))</span>
+
+
+<div class="viewcode-block" id="DS3231"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231">[docs]</a><span class="k">class</span> <span class="nc">DS3231</span><span class="p">(</span><span class="n">_BaseRTC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Subclass that implements DS3231-specific methods.</span>
+
+<span class="sd">    ***Methods:***</span>
+
+<span class="sd">    * __init__ - Overloaded constructor.</span>
+<span class="sd">    * init - Local scope initialization, called from __init__().</span>
+<span class="sd">    * dateime - Set or return the current RTC time/calendar values.</span>
+<span class="sd">    * alarm_time - Set or return the current alarm one time setting.</span>
+<span class="sd">    * lost_power - True if the RTC has lost power and switched to battery.</span>
+<span class="sd">    * alarm - True if the alarm conditions have been met. Set to False to</span>
+<span class="sd">      clear interrupt and alarm.</span>
+<span class="sd">    * interruptEnable - Enable the interrupt pin action on alarm.</span>
+<span class="sd">    * stop - Stop transmitting data on I2C and freeze registers.</span>
+<span class="sd">    * setAlarmField - Sets the internal alarmField to the passed value.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_CONTROL_REGISTER</span> <span class="o">=</span> <span class="mh">0x0e</span>
+    <span class="n">_STATUS_REGISTER</span> <span class="o">=</span> <span class="mh">0x0f</span>
+    <span class="n">_DATETIME_REGISTER</span> <span class="o">=</span> <span class="mh">0x00</span>
+    <span class="n">_ALARM_REGISTER</span> <span class="o">=</span> <span class="mh">0x07</span>
+    <span class="n">_SQUARE_WAVE_REGISTER</span> <span class="o">=</span> <span class="mh">0x0e</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Overloaded _BaseRTC constructor for DS3231-specific arguments.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DS3231.init"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.init">[docs]</a>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initializes flag for alarm setting.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * none</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alarmField</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="c1"># def datetime(self, datetime=None):</span>
+    <span class="c1">#    if datetime is not None:</span>
+    <span class="c1">#        status = self._register(self._STATUS_REGISTER) &amp; 0b01111111</span>
+    <span class="c1">#        self._register(self._STATUS_REGISTER, bytearray((status,)))</span>
+    <span class="c1">#    return super().datetime(datetime)</span>
+
+
+<div class="viewcode-block" id="DS3231.datetime"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.datetime">[docs]</a>    <span class="k">def</span> <span class="nf">datetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datetime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set or return current time and calendar values.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * datetime - a datetime_tuple structure with data, or None. If None,</span>
+<span class="sd">          returns the current datetime, else sets the RTC.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datetime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="o">.</span><span class="n">readfrom_mem_into</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DATETIME_REGISTER</span><span class="p">,</span>
+                                       <span class="n">buffer</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">datetime_tuple</span><span class="p">(</span>
+                <span class="n">year</span><span class="o">=</span><span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span> <span class="o">+</span> <span class="mi">2000</span><span class="p">,</span>
+                <span class="n">month</span><span class="o">=</span><span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span>
+                <span class="n">day</span><span class="o">=</span><span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+                <span class="n">weekday</span><span class="o">=</span><span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+                <span class="n">hour</span><span class="o">=</span><span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                <span class="n">minute</span><span class="o">=</span><span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">second</span><span class="o">=</span><span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_STATUS_REGISTER</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mb">0b01111111</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_STATUS_REGISTER</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">((</span><span class="n">status</span><span class="p">,)))</span>
+        <span class="n">datetime</span> <span class="o">=</span> <span class="n">datetime_tuple</span><span class="p">(</span><span class="o">*</span><span class="n">datetime</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bin2bcd</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">second</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bin2bcd</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bin2bcd</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bin2bcd</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">weekday</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bin2bcd</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bin2bcd</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">month</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">_bin2bcd</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="mi">2000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATETIME_REGISTER</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DS3231.alarm_time"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.alarm_time">[docs]</a>    <span class="k">def</span> <span class="nf">alarm_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alarmTime</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets or returns the current alarm time.</span>
+
+<span class="sd">        **Arguements:**</span>
+
+<span class="sd">        * alarmTime - alarmtime_tuple structure containing the new alarm</span>
+<span class="sd">          time, which sets the alarm, or None, which returns the current value.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">alarmTime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="o">.</span><span class="n">readfrom_mem_into</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ALARM_REGISTER</span><span class="p">,</span>
+                                      <span class="n">buffer</span><span class="p">)</span>
+
+            <span class="n">day</span> <span class="o">=</span> <span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x1F</span><span class="p">)</span>
+            <span class="n">hour</span> <span class="o">=</span> <span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x3F</span><span class="p">)</span>
+            <span class="n">minute</span> <span class="o">=</span> <span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)</span>
+            <span class="n">seconds</span> <span class="o">=</span> <span class="n">_bcd2bin</span><span class="p">(</span><span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">alarm_tuple</span><span class="p">(</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span>
+
+        <span class="n">alarmTime</span> <span class="o">=</span> <span class="n">alarm_tuple</span><span class="p">(</span><span class="o">*</span><span class="n">alarmTime</span><span class="p">)</span>
+
+        <span class="c1"># DS3231-specific bitfields in the alarm register</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">_bin2bcd</span><span class="p">(</span><span class="n">alarmTime</span><span class="o">.</span><span class="n">seconds</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">alarmTime</span><span class="o">.</span><span class="n">seconds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mh">0x00</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">_bin2bcd</span><span class="p">(</span><span class="n">alarmTime</span><span class="o">.</span><span class="n">minute</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">alarmTime</span><span class="o">.</span><span class="n">minute</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mh">0x00</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">_bin2bcd</span><span class="p">(</span><span class="n">alarmTime</span><span class="o">.</span><span class="n">hour</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">alarmTime</span><span class="o">.</span><span class="n">hour</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mh">0x00</span><span class="p">)</span>
+        <span class="n">buffer</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">_bin2bcd</span><span class="p">(</span><span class="n">alarmTime</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">alarmTime</span><span class="o">.</span><span class="n">day</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mh">0x00</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ALARM_REGISTER</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DS3231.lost_power"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.lost_power">[docs]</a>    <span class="k">def</span> <span class="nf">lost_power</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return true if the RTC has lost power.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_STATUS_REGISTER</span><span class="p">,</span> <span class="mb">0b10000000</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DS3231.alarm"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.alarm">[docs]</a>    <span class="k">def</span> <span class="nf">alarm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clears or returns the alarm condition.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * value - False to clear the alarm, None to return the current value.</span>
+<span class="sd">          (optional, default None)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Change mask to 0b00000011 to check alarms one and two.</span>
+        <span class="c1"># Set/return the alarm flag</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_STATUS_REGISTER</span><span class="p">,</span> <span class="mb">0b00000001</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DS3231.interruptEnable"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.interruptEnable">[docs]</a>    <span class="k">def</span> <span class="nf">interruptEnable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets or unsets the interrupt pin enable for alarms.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * value - A boolean that enables or disables the alarm interrupt.</span>
+<span class="sd">          (optional, default True)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_CONTROL_REGISTER</span><span class="p">,</span> <span class="mb">0b00000001</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DS3231.stop"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stops the RTC from transmitting data on I2C and freezes registers.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * value - True to stop the RTC, None to return current value. (optional,</span>
+<span class="sd">          default None)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_CONTROL_REGISTER</span><span class="p">,</span> <span class="mb">0b10000000</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DS3231.setAlarmField"><a class="viewcode-back" href="../details.html#adafruit_ds3231.DS3231.setAlarmField">[docs]</a>    <span class="k">def</span> <span class="nf">setAlarmField</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set internal alarmField value.</span>
+
+<span class="sd">        **Arguments:**</span>
+
+<span class="sd">        * value - Boolean value to set or unset the alarmField value.</span>
+<span class="sd">          (optional, default True) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alarmField</span> <span class="o">=</span> <span class="n">value</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Philip Moyer.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.8</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
