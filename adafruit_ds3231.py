@@ -1,6 +1,6 @@
 """
-`adafruit_ds3231`
-=================
+`adafruit_ds3231` - DS3231 Real Time Clock module
+=================================================
 MicroPython library to support DS3231 Real Time Clock (RTC).
 
 This library supports the use of the DS3231-based RTC in MicroPython.
