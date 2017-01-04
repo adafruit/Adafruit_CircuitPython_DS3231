@@ -34,16 +34,19 @@ Implementation Notes
 --------------------
 
 **Hardware:**
+
 * Adafruit `Feather HUZZAH ESP8266 <https://www.adafruit.com/products/2821>`_ (Product ID: 2821)
 * Adafruit `Feather M0 Adalogger <https://www.adafruit.com/products/2796>`_  (Product ID: 2796)
 * Adafruit `Arduino Zero <https://www.adafruit.com/products/2843>`_ (Product ID: 2843)
 * Adafruit `DS3231 RTC breakout <https://www.adafruit.com/products/3013>`_ (Product ID: 3013)
 
 **Software and Dependencies:**
+
 * Adafruit's MicroPython firmware for the ESP8622 and M0-based boards: https://github.com/adafruit/micropython/releases
 * Adafruit's register library: https://github.com/adafruit/Adafruit_MicroPython_Register
 
 **Notes:**
+
 #. Milliseconds are not supported by this RTC.
 #. Datasheet: https://datasheets.maximintegrated.com/en/ds/DS3231.pdf
 
