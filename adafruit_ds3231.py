@@ -22,28 +22,26 @@
 """
 `adafruit_ds3231` - DS3231 Real Time Clock module
 =================================================
-MicroPython library to support DS3231 Real Time Clock (RTC).
+CircuitPython library to support DS3231 Real Time Clock (RTC).
 
-This library supports the use of the DS3231-based RTC in MicroPython.
+This library supports the use of the DS3231-based RTC in CircuitPython.
 
 Author(s): Philip R. Moyer and Radomir Dopieralski for Adafruit Industries.
-Date: November 2016
-Affiliation: Adafruit Industries
 
 Implementation Notes
 --------------------
 
 **Hardware:**
 
-* Adafruit `Feather HUZZAH ESP8266 <https://www.adafruit.com/products/2821>`_ (Product ID: 2821)
-* Adafruit `Feather M0 Adalogger <https://www.adafruit.com/products/2796>`_  (Product ID: 2796)
-* Adafruit `Arduino Zero <https://www.adafruit.com/products/2843>`_ (Product ID: 2843)
+* Adafruit `DS3231 Precision RTC FeatherWing <https://www.adafruit.com/products/3028>`_  (Product ID: 3028)
 * Adafruit `DS3231 RTC breakout <https://www.adafruit.com/products/3013>`_ (Product ID: 3013)
+* Adafruit `ChronoDot - Ultra-precise Real Time Clock - v2.1 <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
 
 **Software and Dependencies:**
 
-* Adafruit's MicroPython firmware for the ESP8622 and M0-based boards: https://github.com/adafruit/micropython/releases
-* Adafruit's register library: https://github.com/adafruit/Adafruit_MicroPython_Register
+* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards: https://github.com/adafruit/micropython/releases
+* Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
+* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
 **Notes:**
 
@@ -67,7 +65,9 @@ class DS3231:
     datetime_register = i2c_bcd_datetime.BCDDateTimeRegister(0x00)
     """Current date and time."""
 
-    alarm1 = i2c_bcd_datetime.BCDAlarmTimeRegister(0x07)
+    # The first alarm supports seconds but we ignore it by starting at 0x8
+    # instead of 0x7.
+    alarm1 = i2c_bcd_datetime.BCDAlarmTimeRegister(0x08)
     """Alarm time for the first alarm."""
 
     alarm1_interrupt = i2c_bit.RWBit(0x0e, 0)
@@ -85,8 +85,19 @@ class DS3231:
     alarm2_status = i2c_bit.RWBit(0x0f, 1)
     """True if alarm2 is alarming. Set to False to reset."""
 
-    def __init__(self, i2c, device_address=0x68):
-        self.i2c_device = I2CDevice(i2c, device_address)
+    def __init__(self, i2c):
+        self.i2c_device = I2CDevice(i2c, 0x68)
+
+        # Try and verify this is the RTC we expect by checking the rate select
+        # control bits which are 1 on reset and shouldn't ever be changed.
+        buf = bytearray(2)
+        buf[0] = 0x0e
+        with self.i2c_device as i2c:
+            i2c.writeto(buf, end=1, stop=False)
+            i2c.readfrom_into(buf, start=1)
+
+        if (buf[1] & 0b00011000) != 0b00011000:
+            raise ValueError("Unable to find DS3231 at i2c address 0x68.")
 
     @property
     def datetime(self):
