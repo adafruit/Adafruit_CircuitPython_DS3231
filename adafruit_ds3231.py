@@ -51,6 +51,7 @@ Implementation Notes
 """
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register import i2c_bit
+from adafruit_register import i2c_bcd_alarm
 from adafruit_register import i2c_bcd_datetime
 
 class DS3231:
@@ -65,9 +66,7 @@ class DS3231:
     datetime_register = i2c_bcd_datetime.BCDDateTimeRegister(0x00)
     """Current date and time."""
 
-    # The first alarm supports seconds but we ignore it by starting at 0x8
-    # instead of 0x7.
-    alarm1 = i2c_bcd_datetime.BCDAlarmTimeRegister(0x08)
+    alarm1 = i2c_bcd_alarm.BCDAlarmTimeRegister(0x07)
     """Alarm time for the first alarm."""
 
     alarm1_interrupt = i2c_bit.RWBit(0x0e, 0)
@@ -76,7 +75,7 @@ class DS3231:
     alarm1_status = i2c_bit.RWBit(0x0f, 0)
     """True if alarm1 is alarming. Set to False to reset."""
 
-    alarm2 = i2c_bcd_datetime.BCDAlarmTimeRegister(0x0b)
+    alarm2 = i2c_bcd_alarm.BCDAlarmTimeRegister(0x0b, has_seconds=False)
     """Alarm time for the second alarm."""
 
     alarm2_interrupt = i2c_bit.RWBit(0x0e, 1)

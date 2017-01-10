@@ -1,6 +1,14 @@
 Introduction
 ============
 
+.. image:: https://readthedocs.org/projects/adafruit-micropython-ds3231/badge/?version=latest
+    :target: https://circuitpython.readthedocs.io/projects/ds3231/en/latest/
+    :alt: Documentation Status
+
+.. image :: https://badges.gitter.im/adafruit/circuitpython.svg
+    :target: https://gitter.im/adafruit/circuitpython?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+    :alt: Gitter
+
 The datasheet for the DS3231 explains that this part is an
 "Extremely Accurate I²C-Integrated RTC/TCXO/Crystal". And,
 hey, it does exactly what it says on the tin! This Real Time
@@ -27,114 +35,97 @@ really know the time.
 
 .. image:: 3013-01.jpg
 
+Dependencies
+=============
 
-Implementation Details
-=======================
-
-Background
-----------
-
-This page contains the details of the functions, classes, and methods
-available in the DS3231 library.
-
-The DS3231 library consists of three major sections:
-
-#. Functions
-#. The base class _BaseRTC
-#. The subclass DS1307
-
-Functions
----------
-
-The only library functions of which you need to be aware of for the
-DS1307 are datetime_tuple() and alarm_tuple().
-
-The first is the function that creates an object
-you use to set the clock time. It takes eight arguments and returns a
-datetimetuple object containing the new time settings. The arguments are
-positional rather than keyword arguments. They are, in order:
-
-* Year (4-digit)
-* Month (2-digit)
-* Day of the month (2-digit)
-* Day of the week (1 digit, 0 = Sunday)
-* Hour (24 hour clock, 2-digit)
-* Minute (2-digit)
-* Seconds (2-digits)
-* The digit 0 (representing milliseconds, which are not supported by this RTC)
-
-The second is the function that returns an alarmtuple structure to set the
-alarm on the RTC. It takes four arguments:
-
-* Day of the week
-* Day of the month
-* hour
-* minute
-
-See the section, below, on usage for examples.
-
-Class Methods
--------------
-
-Here are the important class methods for you to know:
-
-* datetime() - sets or returns the RTC clock time
-* alarm_time() - sets or returns the current alarm setting
-* _register() - returns the contents of a register in the RTC chip
-* stop() - suspends RTC operation or, if the argument is None, returns the
-  current setting.
-* lost_power() - returns true or false depending on whether the board has
-  lost power. Passing the value "False" will reset the flag.
-* alarm() - returns the alarm state (True or False). Passing False as the
-  argument will reset the flag.
-* interruptEnable() - determines whether an alarm generates an interrupt on the
-  INT/SQW pin
+This driver depends on the `Register <https://github.com/adafruit/Adafruit_CircuitPython_Register>`_
+and `Bus Device <https://github.com/adafruit/Adafruit_CircuitPython_BusDevice>`_
+libraries. Please ensure they are also available on the CircuitPython filesystem.
+This is easily achieved by downloading
+`a library and driver bundle <https://github.com/adafruit/Adafruit_CircuitPython_Bundle>`_.
 
 Usage Notes
 ===========
 
+Basics
+------
+
 Of course, you must import the library to use it:
 
-   import machine
+.. code:: python
 
-   import adafruit_ds3231
+    import nativeio
+    import adafruit_ds3231
+    import time
 
 All the Adafruit RTC libraries take an instantiated and active I2C object
-(from the machine library) as an argument to their constructor. The way to
-create an I2C object depends on the board you are using. If you are using the
-ATSAMD21-based board, like the Feather M0, you **must** initialize the object
-after you create it:
+(from the `nativeio` library) as an argument to their constructor. The way to
+create an I2C object depends on the board you are using. For boards with labeled
+SCL and SDA pins, you can:
 
-   myI2C = machine.I2C(machine.Pin('SCL'), machine.Pin('SDA'))
+.. code:: python
 
-   myI2C.init()
+    from board import *
 
-If you are using the ESP8266-based boards, however, you do not need to
-init() the object after creating it:
+You can also use pins defined by the onboard `microcontroller` through the
+`microcontroller.pin` module.
 
-   myI2C = machine.I2C(machine.Pin(5), machine.Pin(4))
+Now, to initialize the I2C bus:
+
+.. code:: python
+
+    myI2C = nativeio.I2C(SCL, SDA)
 
 Once you have created the I2C interface object, you can use it to instantiate
 the RTC object:
 
-   rtc = adafruit_ds3231.DS3231(myI2C)
+.. code:: python
 
-To set the time, you need to pass datetime() a datetimetuple object:
+    rtc = adafruit_ds3231.DS3231(myI2C)
 
-   newTime = adafruit_ds3231.datetime_tuple(2016,11,18,6,9,36,0,0)
+Date and time
+-------------
 
-   rtc.datetime(newTime)
+To set the time, you need to set ``datetime`` to a `time.struct_time` object:
 
-After the RTC is set, you retrieve the time by calling the datetime() method
-without any arguments.
+.. code:: python
 
-   curTime = rtc.datetime()
+    rtc.datetime = time.struct_time((2017,1,9,15,6,0,0,9,-1))
 
-The DS3231 supports an alarm function. You set the alarm very similarly to
-the way you set the datetime.
+After the RTC is set, you retrieve the time by reading the ``datetime``
+attribute and access the standard attributes of a struct_time such as `tm_year`,
+`tm_hour` and `tm_min`.
 
-   newAlarm = adafruit_ds3231.alarm_tuple(6,18,10,41)
+.. code:: python
 
-   rtc.alarm_time(newAlarm)
+    t = rtc.datetime
+    print(t)
+    print(t.tm_hour, t.tm_min)
 
-Many more details can be found in the Docs/_build directory.
+Alarm
+-----
+
+To set the time, you need to set ``alarm1`` or ``alarm2`` to a tuple with a
+`time.struct_time` object and string representing the frequency such as "hourly":
+
+.. code:: python
+
+    rtc.alarm1 = (time.struct_time((2017,1,9,15,6,0,0,9,-1)), "daily")
+
+After the RTC is set, you retrieve the alarm status by reading the corresponding
+`alarm1_status` or `alarm2_status` attributes. Once True, set it back to False
+to reset.
+
+.. code:: python
+
+    if rtc.alarm1_status:
+        print("wake up!")
+        rtc.alarm1_status = False
+
+API Reference
+=============
+
+.. toctree::
+   :maxdepth: 2
+
+   api
