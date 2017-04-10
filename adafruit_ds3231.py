@@ -39,7 +39,7 @@ Implementation Notes
 
 **Software and Dependencies:**
 
-* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards: https://github.com/adafruit/micropython/releases
+* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards: https://github.com/adafruit/circuitpython/releases
 * Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
@@ -92,8 +92,8 @@ class DS3231:
         buf = bytearray(2)
         buf[0] = 0x0e
         with self.i2c_device as i2c:
-            i2c.writeto(buf, end=1, stop=False)
-            i2c.readfrom_into(buf, start=1)
+            i2c.write(buf, end=1, stop=False)
+            i2c.read_into(buf, start=1)
 
         if (buf[1] & 0b00011000) != 0b00011000:
             raise ValueError("Unable to find DS3231 at i2c address 0x68.")
