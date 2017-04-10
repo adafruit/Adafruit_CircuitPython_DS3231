@@ -54,12 +54,12 @@ Of course, you must import the library to use it:
 
 .. code:: python
 
-    import nativeio
+    import busio
     import adafruit_ds3231
     import time
 
 All the Adafruit RTC libraries take an instantiated and active I2C object
-(from the `nativeio` library) as an argument to their constructor. The way to
+(from the `busio` library) as an argument to their constructor. The way to
 create an I2C object depends on the board you are using. For boards with labeled
 SCL and SDA pins, you can:
 
@@ -74,7 +74,7 @@ Now, to initialize the I2C bus:
 
 .. code:: python
 
-    myI2C = nativeio.I2C(SCL, SDA)
+    myI2C = busio.I2C(SCL, SDA)
 
 Once you have created the I2C interface object, you can use it to instantiate
 the RTC object:
