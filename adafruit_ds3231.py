@@ -33,13 +33,16 @@ Implementation Notes
 
 **Hardware:**
 
-* Adafruit `DS3231 Precision RTC FeatherWing <https://www.adafruit.com/products/3028>`_  (Product ID: 3028)
+* Adafruit `DS3231 Precision RTC FeatherWing <https://www.adafruit.com/products/3028>`_
+(Product ID: 3028)
 * Adafruit `DS3231 RTC breakout <https://www.adafruit.com/products/3013>`_ (Product ID: 3013)
-* Adafruit `ChronoDot - Ultra-precise Real Time Clock - v2.1 <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
+* Adafruit `ChronoDot - Ultra-precise Real Time Clock -
+v2.1 <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
 
 **Software and Dependencies:**
 
-* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards: https://github.com/adafruit/circuitpython/releases
+* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards:
+https://github.com/adafruit/circuitpython/releases
 * Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
@@ -54,6 +57,10 @@ from adafruit_register import i2c_bit
 from adafruit_register import i2c_bcd_alarm
 from adafruit_register import i2c_bcd_datetime
 
+__version__ = "0.0.0-auto.0"
+__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DS3231.git"
+
+#pylint: disable-msg=too-few-public-methods
 class DS3231:
     """Interface to the DS3231 RTC."""
 
@@ -91,16 +98,17 @@ class DS3231:
         # control bits which are 1 on reset and shouldn't ever be changed.
         buf = bytearray(2)
         buf[0] = 0x0e
-        with self.i2c_device as i2c:
-            i2c.write(buf, end=1, stop=False)
-            i2c.readinto(buf, start=1)
+        with self.i2c_device as i2c_device:
+            i2c_device.write(buf, end=1, stop=False)
+            i2c_device.readinto(buf, start=1)
 
         if (buf[1] & 0b00011000) != 0b00011000:
             raise ValueError("Unable to find DS3231 at i2c address 0x68.")
 
     @property
     def datetime(self):
-        """Gets the current date and time or sets the current date and time then starts the clock."""
+        """Gets the current date and time or sets the current date and time
+        then starts the clock."""
         return self.datetime_register
 
     @datetime.setter
