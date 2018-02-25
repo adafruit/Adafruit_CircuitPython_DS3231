@@ -183,7 +183,7 @@ html_static_path = ['_static']
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 #
-html_favicon = '_static/favicon.ic
+html_favicon = '_static/favicon.ico'
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
