@@ -33,7 +33,7 @@ timekeeping, even when main power is lost. Great for
 datalogging and clocks, or anything where you need to
 really know the time.
 
-.. image:: ../docs/_static/3013-01.jpg
+.. image:: /docs/_static/3013-01.jpg
 
 Dependencies
 =============
