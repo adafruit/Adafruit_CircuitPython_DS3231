@@ -34,15 +34,17 @@ Implementation Notes
 **Hardware:**
 
 * Adafruit `DS3231 Precision RTC FeatherWing <https://www.adafruit.com/products/3028>`_
-(Product ID: 3028)
+  (Product ID: 3028)
+
 * Adafruit `DS3231 RTC breakout <https://www.adafruit.com/products/3013>`_ (Product ID: 3013)
 * Adafruit `ChronoDot - Ultra-precise Real Time Clock -
-v2.1 <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
+  v2.1 <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
 
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the ESP8622 and M0-based boards:
-https://github.com/adafruit/circuitpython/releases
+  https://github.com/adafruit/circuitpython/releases
+
 * Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
 * Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
