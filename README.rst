@@ -9,6 +9,10 @@
     :target: https://discord.gg/nBQh6qu
     :alt: Discord
 
+.. image:: https://travis-ci.org/adafruit/Adafruit_CircuitPython_DS3231.svg?branch=master
+    :target: https://travis-ci.org/adafruit/Adafruit_CircuitPython_DS3231
+    :alt: Build Status
+
 The datasheet for the DS3231 explains that this part is an
 "Extremely Accurate I²C-Integrated RTC/TCXO/Crystal". And,
 hey, it does exactly what it says on the tin! This Real Time
