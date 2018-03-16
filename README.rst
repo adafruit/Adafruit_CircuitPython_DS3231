@@ -38,6 +38,7 @@ datalogging and clocks, or anything where you need to
 really know the time.
 
 .. image:: ../docs/_static/3013-01.jpg
+    :alt: DS3231 Product Image
 
 Dependencies
 =============
