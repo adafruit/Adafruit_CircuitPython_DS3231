@@ -101,8 +101,7 @@ class DS3231:
         buf = bytearray(2)
         buf[0] = 0x0e
         with self.i2c_device as i2c_device:
-            i2c_device.write(buf, end=1, stop=False)
-            i2c_device.readinto(buf, start=1)
+            i2c_device.write_then_readinto(buf, buf, out_end=1, in_start=1)
 
         if (buf[1] & 0b00011000) != 0b00011000:
             raise ValueError("Unable to find DS3231 at i2c address 0x68.")
