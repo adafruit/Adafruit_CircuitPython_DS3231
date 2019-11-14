@@ -54,6 +54,7 @@ Implementation Notes
 #. Datasheet: https://datasheets.maximintegrated.com/en/ds/DS3231.pdf
 
 """
+import time
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register import i2c_bit
 from adafruit_register import i2c_bcd_alarm
@@ -96,14 +97,10 @@ class DS3231:
     def __init__(self, i2c):
         self.i2c_device = I2CDevice(i2c, 0x68)
 
-        # Try and verify this is the RTC we expect by checking the rate select
-        # control bits which are 1 on reset and shouldn't ever be changed.
-        buf = bytearray(2)
-        buf[0] = 0x0e
-        with self.i2c_device as i2c_device:
-            i2c_device.write_then_readinto(buf, buf, out_end=1, in_start=1)
-
-        if (buf[1] & 0b00011000) != 0b00011000:
+        # Try and verify this is the RTC we expect by checking change in secs
+        check = self.datetime_register.tm_sec
+        time.sleep(1.1)
+        if self.datetime_register.tm_sec == check:
             raise ValueError("Unable to find DS3231 at i2c address 0x68.")
 
     @property
