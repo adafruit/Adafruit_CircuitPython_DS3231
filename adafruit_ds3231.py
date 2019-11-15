@@ -97,12 +97,6 @@ class DS3231:
     def __init__(self, i2c):
         self.i2c_device = I2CDevice(i2c, 0x68)
 
-        # Try and verify this is the RTC we expect by checking change in secs
-        check = self.datetime_register.tm_sec
-        time.sleep(1.1)
-        if self.datetime_register.tm_sec == check:
-            raise ValueError("Unable to find DS3231 at i2c address 0x68.")
-
     @property
     def datetime(self):
         """Gets the current date and time or sets the current date and time
