@@ -1,5 +1,5 @@
-﻿Introduction
-============
+Introduction
+=============
 
 .. image:: https://readthedocs.org/projects/adafruit-micropython-ds3231/badge/?version=latest
     :target: https://circuitpython.readthedocs.io/projects/ds3231/en/latest/
