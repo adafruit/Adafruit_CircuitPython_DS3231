@@ -62,14 +62,14 @@ from adafruit_register import i2c_bcd_datetime
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DS3231.git"
 
-#pylint: disable-msg=too-few-public-methods
+# pylint: disable-msg=too-few-public-methods
 class DS3231:
     """Interface to the DS3231 RTC."""
 
-    lost_power = i2c_bit.RWBit(0x0f, 7)
+    lost_power = i2c_bit.RWBit(0x0F, 7)
     """True if the device has lost power since the time was set."""
 
-    disable_oscillator = i2c_bit.RWBit(0x0e, 7)
+    disable_oscillator = i2c_bit.RWBit(0x0E, 7)
     """True if the oscillator is disabled."""
 
     datetime_register = i2c_bcd_datetime.BCDDateTimeRegister(0x00)
@@ -78,19 +78,19 @@ class DS3231:
     alarm1 = i2c_bcd_alarm.BCDAlarmTimeRegister(0x07)
     """Alarm time for the first alarm."""
 
-    alarm1_interrupt = i2c_bit.RWBit(0x0e, 0)
+    alarm1_interrupt = i2c_bit.RWBit(0x0E, 0)
     """True if the interrupt pin will output when alarm1 is alarming."""
 
-    alarm1_status = i2c_bit.RWBit(0x0f, 0)
+    alarm1_status = i2c_bit.RWBit(0x0F, 0)
     """True if alarm1 is alarming. Set to False to reset."""
 
-    alarm2 = i2c_bcd_alarm.BCDAlarmTimeRegister(0x0b, has_seconds=False)
+    alarm2 = i2c_bcd_alarm.BCDAlarmTimeRegister(0x0B, has_seconds=False)
     """Alarm time for the second alarm."""
 
-    alarm2_interrupt = i2c_bit.RWBit(0x0e, 1)
+    alarm2_interrupt = i2c_bit.RWBit(0x0E, 1)
     """True if the interrupt pin will output when alarm2 is alarming."""
 
-    alarm2_status = i2c_bit.RWBit(0x0f, 1)
+    alarm2_status = i2c_bit.RWBit(0x0F, 1)
     """True if alarm2 is alarming. Set to False to reset."""
 
     def __init__(self, i2c):
