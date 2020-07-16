@@ -56,6 +56,7 @@ Implementation Notes
 """
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register import i2c_bit
+from adafruit_register import i2c_bits
 from adafruit_register import i2c_bcd_alarm
 from adafruit_register import i2c_bcd_datetime
 
@@ -93,6 +94,15 @@ class DS3231:
     alarm2_status = i2c_bit.RWBit(0x0F, 1)
     """True if alarm2 is alarming. Set to False to reset."""
 
+    _calibration = i2c_bits.RWBits(8, 0x10, 0, 8, signed=True)
+
+    _temperature = i2c_bits.RWBits(
+        10, 0x11, 6, register_width=2, lsb_first=False, signed=True
+    )
+
+    _busy = i2c_bit.ROBit(0x0F, 2)
+    _conv = i2c_bit.RWBit(0x0E, 5)
+
     def __init__(self, i2c):
         self.i2c_device = I2CDevice(i2c, 0x68)
 
@@ -107,3 +117,27 @@ class DS3231:
         self.datetime_register = value
         self.disable_oscillator = False
         self.lost_power = False
+
+    @property
+    def temperature(self):
+        """Returns the last temperature measurement.  Temperature is updated only every 64 seconds, or when a conversion is forced."""
+        return self._temperature / 4
+
+    def force_conversion(self):
+        """Forces a conversion and returns the new temperature"""
+        while self._busy:
+            pass
+        self._conv = True
+        while self._busy:
+            pass
+        return self.temperature
+
+    @property
+    def calibration(self):
+        """Calibration values range from -128 to 127; each step is approximately 0.1ppm, and positive values decrease the frequency (increase the period).  When set, a temperature conversion is forced so the result of calibration can be seen directly at the 32kHz pin after the next temperature conversion."""
+        return self._calibration
+
+    @calibration.setter
+    def calibration(self, value):
+        self._calibration = value
+        self.force_conversion()
