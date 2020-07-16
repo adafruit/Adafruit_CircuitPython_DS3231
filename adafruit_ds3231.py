@@ -120,7 +120,8 @@ class DS3231:
 
     @property
     def temperature(self):
-        """Returns the last temperature measurement.  Temperature is updated only every 64 seconds, or when a conversion is forced."""
+        """Returns the last temperature measurement.  Temperature is updated
+        only every 64 seconds, or when a conversion is forced."""
         return self._temperature / 4
 
     def force_conversion(self):
@@ -134,7 +135,11 @@ class DS3231:
 
     @property
     def calibration(self):
-        """Calibration values range from -128 to 127; each step is approximately 0.1ppm, and positive values decrease the frequency (increase the period).  When set, a temperature conversion is forced so the result of calibration can be seen directly at the 32kHz pin after the next temperature conversion."""
+        """Calibration values range from -128 to 127; each step is
+        approximately 0.1ppm, and positive values decrease the frequency
+        (increase the period).  When set, a temperature conversion is forced so
+        the result of calibration can be seen directly at the 32kHz pin after
+        the next temperature conversion."""
         return self._calibration
 
     @calibration.setter
