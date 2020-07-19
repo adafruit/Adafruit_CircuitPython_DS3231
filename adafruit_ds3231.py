@@ -124,25 +124,26 @@ class DS3231:
         only every 64 seconds, or when a conversion is forced."""
         return self._temperature / 4
 
-    def force_conversion(self):
+    def force_temperature_conversion(self):
         """Forces a conversion and returns the new temperature"""
         while self._busy:
-            pass
+            pass  # Wait for any normal in-progress conversion to complete
         self._conv = True
-        while self._busy:
-            pass
+        while self._conv:
+            pass  # Wait for manual conversion request to complete
         return self.temperature
 
     @property
     def calibration(self):
-        """Calibration values range from -128 to 127; each step is
-        approximately 0.1ppm, and positive values decrease the frequency
-        (increase the period).  When set, a temperature conversion is forced so
-        the result of calibration can be seen directly at the 32kHz pin after
-        the next temperature conversion."""
+        """Calibrate the frequency of the crystal oscillator by adding or
+        removing capacitance.  The datasheet calls this the Aging Offset.
+        Calibration values range from -128 to 127; each step is approximately
+        0.1ppm, and positive values decrease the frequency (increase the
+        period).  When set, a temperature conversion is forced so the result of
+        calibration can be seen directly at the 32kHz pin immediately"""
         return self._calibration
 
     @calibration.setter
     def calibration(self, value):
         self._calibration = value
-        self.force_conversion()
+        self.force_temperature_conversion()
