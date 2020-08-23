@@ -25,7 +25,6 @@ rtc = adafruit_ds3231.DS3231(i2c)
 days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
 
-# pylint: disable-msg=bad-whitespace
 # pylint: disable-msg=using-constant-test
 if False:  # change to True if you want to set the time!
     #                     year, mon, date, hour, min, sec, wday, yday, isdst
@@ -36,7 +35,6 @@ if False:  # change to True if you want to set the time!
     rtc.datetime = t
     print()
 # pylint: enable-msg=using-constant-test
-# pylint: enable-msg=bad-whitespace
 
 # Main loop:
 while True:
