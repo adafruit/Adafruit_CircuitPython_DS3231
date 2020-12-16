@@ -94,7 +94,7 @@ class DS3231:
     alarm2_status = i2c_bit.RWBit(0x0F, 1)
     """True if alarm2 is alarming. Set to False to reset."""
 
-    _calibration = i2c_bits.RWBits(8, 0x10, 0, 8, signed=True)
+    _calibration = i2c_bits.RWBits(8, 0x10, 0, 1, signed=True)
 
     _temperature = i2c_bits.RWBits(
         10, 0x11, 6, register_width=2, lsb_first=False, signed=True
