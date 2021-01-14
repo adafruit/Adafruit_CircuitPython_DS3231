@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 # Simple demo of reading and writing the time for the DS3231 real-time clock.
 # Change the if False to if True below to set the time, otherwise it will just
 # print the current date and time every second.  Notice also comments to adjust
