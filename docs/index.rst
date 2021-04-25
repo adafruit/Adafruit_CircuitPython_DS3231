@@ -23,6 +23,8 @@ Table of Contents
 .. toctree::
     :caption: Tutorials
 
+    Adafruit DS3231 Precision RTC Breakout Learning Guide <https://learn.adafruit.com/adafruit-ds3231-precision-rtc-breakout/>
+
 .. toctree::
     :caption: Related Products
 
