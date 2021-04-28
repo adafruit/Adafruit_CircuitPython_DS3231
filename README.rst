@@ -103,7 +103,7 @@ Now, to initialize the I2C bus:
 
 .. code:: python3
 
-    i2c = board.I2C()
+    i2c = board.I2C()  # uses board.SCL and board.SDA
 
 Once you have created the I2C interface object, you can use it to instantiate
 the RTC object:

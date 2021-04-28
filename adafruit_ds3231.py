@@ -17,21 +17,26 @@ Implementation Notes
 
 **Hardware:**
 
-* Adafruit `DS3231 Precision RTC FeatherWing <https://www.adafruit.com/products/3028>`_
-  (Product ID: 3028)
+* `Adafruit DS3231 Precision RTC FeatherWing
+  <https://www.adafruit.com/products/3028>`_ (Product ID: 3028)
 
-* Adafruit `DS3231 RTC breakout <https://www.adafruit.com/products/3013>`_ (Product ID: 3013)
-* Adafruit `ChronoDot - Ultra-precise Real Time Clock -
-  v2.1 <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
+* `Adafruit DS3231 RTC breakout
+  <https://www.adafruit.com/products/3013>`_ (Product ID: 3013)
+
+* `Adafruit ChronoDot - Ultra-precise Real Time Clock - v2.1
+  <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
+
 
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the supported boards:
   https://circuitpython.org/downloads
 
-* Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
+* Adafruit's Bus Device library:
+  https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
-* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+* Adafruit's Register library:
+  https://github.com/adafruit/Adafruit_CircuitPython_Register
 
 
 **Notes:**
