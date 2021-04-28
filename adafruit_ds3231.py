@@ -24,7 +24,7 @@ Implementation Notes
   <https://www.adafruit.com/products/3013>`_ (Product ID: 3013)
 
 * `Adafruit ChronoDot - Ultra-precise Real Time Clock - v2.1
-  <https://www.adafruit.com/products/255>`_ (Product ID: 3013)
+  <https://www.adafruit.com/products/255>`_ (Product ID: 255)
 
 
 **Software and Dependencies:**
