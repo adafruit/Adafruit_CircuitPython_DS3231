@@ -151,6 +151,11 @@ to reset.
         print("wake up!")
         rtc.alarm1_status = False
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/ds3231/en/latest/>`_.
+
 Contributing
 ============
 
