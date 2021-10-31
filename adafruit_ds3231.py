@@ -51,6 +51,14 @@ from adafruit_register import i2c_bits
 from adafruit_register import i2c_bcd_alarm
 from adafruit_register import i2c_bcd_datetime
 
+try:
+    # Used only for typing
+    import typing  # pylint: disable=unused-import
+    from busio import I2C
+    from time import struct_time
+except ImportError:
+    pass
+
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DS3231.git"
 
@@ -131,28 +139,28 @@ class DS3231:
     _busy = i2c_bit.ROBit(0x0F, 2)
     _conv = i2c_bit.RWBit(0x0E, 5)
 
-    def __init__(self, i2c):
+    def __init__(self, i2c: I2C) -> None:
         self.i2c_device = I2CDevice(i2c, 0x68)
 
     @property
-    def datetime(self):
+    def datetime(self) -> struct_time:
         """Gets the current date and time or sets the current date and time
         then starts the clock."""
         return self.datetime_register
 
     @datetime.setter
-    def datetime(self, value):
+    def datetime(self, value: struct_time) -> None:
         self.datetime_register = value
         self.disable_oscillator = False
         self.lost_power = False
 
     @property
-    def temperature(self):
+    def temperature(self) -> float:
         """Returns the last temperature measurement.  Temperature is updated
         only every 64 seconds, or when a conversion is forced."""
         return self._temperature / 4
 
-    def force_temperature_conversion(self):
+    def force_temperature_conversion(self) -> float:
         """Forces a conversion and returns the new temperature"""
         while self._busy:
             pass  # Wait for any normal in-progress conversion to complete
@@ -162,7 +170,7 @@ class DS3231:
         return self.temperature
 
     @property
-    def calibration(self):
+    def calibration(self) -> int:
         """Calibrate the frequency of the crystal oscillator by adding or
         removing capacitance.  The datasheet calls this the Aging Offset.
         Calibration values range from -128 to 127; each step is approximately
@@ -172,6 +180,6 @@ class DS3231:
         return self._calibration
 
     @calibration.setter
-    def calibration(self, value):
+    def calibration(self, value: int) -> None:
         self._calibration = value
         self.force_temperature_conversion()
