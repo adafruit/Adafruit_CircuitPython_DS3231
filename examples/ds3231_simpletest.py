@@ -14,7 +14,7 @@ i2c = board.I2C()  # uses board.SCL and board.SDA
 rtc = adafruit_ds3231.DS3231(i2c)
 
 # Lookup table for names of days (nicer printing).
-days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
 
 # pylint: disable-msg=using-constant-test
