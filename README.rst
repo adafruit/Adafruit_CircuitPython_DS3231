@@ -13,6 +13,10 @@ Introduction
     :target: https://github.com/adafruit/Adafruit_CircuitPython_DS3231/actions/
     :alt: Build Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: Code Style: Black
+
 The datasheet for the DS3231 explains that this part is an
 "Extremely Accurate I²C-Integrated RTC/TCXO/Crystal". And,
 hey, it does exactly what it says on the tin! This Real Time
