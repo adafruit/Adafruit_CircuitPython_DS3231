@@ -12,7 +12,7 @@ requires = [
 [project]
 name = "adafruit-circuitpython-ds3231"
 description = "CircuitPython library for DS3231 precision real-time clock."
-version = "0.0.0-auto.0"
+version = "0.0.0+auto.0"
 readme = "README.rst"
 authors = [
     {name = "Adafruit Industries", email = "circuitpython@adafruit.com"}
