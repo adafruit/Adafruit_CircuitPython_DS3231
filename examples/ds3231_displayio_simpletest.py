@@ -36,10 +36,21 @@ display.root_group = main_group
 
 
 # Lookup tables for names of days and months - pretty printing
-days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
-        "Saturday", "Sunday")
-months = ("January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December")
+days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+months = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+)
 
 # Begin main loop
 while True:
