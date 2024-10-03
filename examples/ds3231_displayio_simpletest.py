@@ -57,5 +57,5 @@ while True:
     t = ds3231.datetime
     # Update the label.text property to change the text on the display
     display_output_label.text = f"{days[t.tm_wday]}\
-        \n{t.tm_mday} {months[t.tm_mon]} {t.tm_year}\
+        \n{t.tm_mday} {months[t.tm_mon-1]} {t.tm_year}\
         \n{t.tm_hour}:{t.tm_min:02}:{t.tm_sec:02}"
