@@ -1,7 +1,7 @@
 Introduction
 =============
 
-.. image:: https://readthedocs.org/projects/adafruit-micropython-ds3231/badge/?version=latest
+.. image:: https://readthedocs.org/projects/adafruit-circuitpython-ds3231-x/badge/?version=latest
     :target: https://docs.circuitpython.org/projects/ds3231/en/latest/
     :alt: Documentation Status
 
