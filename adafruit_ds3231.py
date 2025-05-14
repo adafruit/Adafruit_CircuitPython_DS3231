@@ -45,17 +45,16 @@ Implementation Notes
 #. Datasheet: https://datasheets.maximintegrated.com/en/ds/DS3231.pdf
 
 """
+
 from adafruit_bus_device.i2c_device import I2CDevice
-from adafruit_register import i2c_bit
-from adafruit_register import i2c_bits
-from adafruit_register import i2c_bcd_alarm
-from adafruit_register import i2c_bcd_datetime
+from adafruit_register import i2c_bcd_alarm, i2c_bcd_datetime, i2c_bit, i2c_bits
 
 try:
     # Used only for typing
-    import typing  # pylint: disable=unused-import
-    from busio import I2C
+    import typing
     from time import struct_time
+
+    from busio import I2C
 except ImportError:
     pass
 
@@ -63,7 +62,6 @@ __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DS3231.git"
 
 
-# pylint: disable-msg=too-few-public-methods
 class DS3231:
     """Interface to the DS3231 RTC.
 
@@ -129,12 +127,9 @@ class DS3231:
     alarm2_status = i2c_bit.RWBit(0x0F, 1)
     """True if alarm2 is alarming. Set to False to reset."""
 
-    # pylint: disable=unexpected-keyword-arg
     _calibration = i2c_bits.RWBits(8, 0x10, 0, 1, signed=True)
 
-    _temperature = i2c_bits.RWBits(
-        10, 0x11, 6, register_width=2, lsb_first=False, signed=True
-    )
+    _temperature = i2c_bits.RWBits(10, 0x11, 6, register_width=2, lsb_first=False, signed=True)
     # pylint: enable=unexpected-keyword-arg
 
     _busy = i2c_bit.ROBit(0x0F, 2)
